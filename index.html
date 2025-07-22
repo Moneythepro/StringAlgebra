@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>StringAlgebra</title>
+
+  <!-- Mobile / Responsive -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="color-scheme" content="dark" />
+
+  <!-- Favicons / Manifest -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <!-- Minimal inline fallback styling -->
+  <style>
+    :root {
+      --c-bg: #000;
+      --c-fg: #0f0; /* default terminal green */
+      --c-accent-red: #ff3d3d;
+      --c-accent-blue: #3da9ff;
+      --c-accent-green: #00ff9c;
+      --c-accent-orange: #ffb84d;
+    }
+    html,body{
+      margin:0;
+      padding:0;
+      height:100%;
+      width:100%;
+      background:var(--c-bg);
+      color:var(--c-fg);
+      font-family:monospace;
+      line-height:1.4;
+      -webkit-text-size-adjust:100%;
+    }
+    .hidden{display:none!important}
+    .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+    button{font-family:inherit;cursor:pointer}
+    input,textarea{font-family:inherit;}
+    #tabBar{
+      display:flex;
+      justify-content:space-around;
+      align-items:center;
+      position:fixed;
+      bottom:0;left:0;right:0;
+      height:48px;
+      background:#111;
+      border-top:1px solid #222;
+      z-index:50;
+    }
+    #tabBar button{
+      flex:1;
+      background:none;
+      border:none;
+      color:var(--c-fg);
+      padding:8px 4px;
+      font-size:14px;
+    }
+    .tab-panel{display:none;padding:56px 16px 64px;}
+    .tab-panel.active{display:block}
+    #threadView{
+      position:fixed;inset:0;
+      background:var(--c-bg);
+      display:none;
+      flex-direction:column;
+      z-index:100;
+    }
+    #threadView.active{display:flex}
+    #threadHeader{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      background:#111;
+      border-bottom:1px solid #222;
+    }
+    #threadMessages{
+      flex:1;
+      overflow-y:auto;
+      padding:12px;
+    }
+    #threadInputBar{
+      display:flex;
+      align-items:flex-end;
+      gap:8px;
+      padding:8px;
+      background:#111;
+      border-top:1px solid #222;
+    }
+    #threadInput{
+      flex:1;
+      resize:none;
+      min-height:32px;
+      max-height:120px;
+      background:#000;
+      color:var(--c-fg);
+      border:1px solid #333;
+      padding:4px 6px;
+    }
+    #threadSendBtn{
+      padding:4px 12px;
+      border:1px solid #333;
+      background:#222;
+      color:var(--c-fg);
+    }
+  </style>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <noscript><div style="padding:1rem;color:#ff3d3d">JavaScript required.</div></noscript>
+
+  <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- TAB 1: INITIAL SETUP -->
+  <section id="setupTab" class="tab-panel active" role="tabpanel" aria-labelledby="tabBtn-setup">
+    <h1 class="app-title">StringAlgebra <span class="accent-green">Terminal</span> Chat</h1>
+
+    <div id="authModeWrap" class="auth-mode-wrap">
+      <button id="authModeLogin" class="auth-mode-btn is-active" type="button">Login</button>
+      <button id="authModeRegister" class="auth-mode-btn" type="button">Register</button>
+    </div>
+
+    <form id="loginForm" class="auth-form" autocomplete="on">
+      <label>Email<br /><input id="loginEmail" type="email" required autocomplete="email" /></label>
+      <label>Password<br /><input id="loginPassword" type="password" required autocomplete="current-password" /></label>
+      <div class="auth-form-actions"><button type="submit">Login</button></div>
+    </form>
+
+    <form id="registerForm" class="auth-form hidden" autocomplete="on">
+      <label>Email<br /><input id="regEmail" type="email" required autocomplete="email" /></label>
+      <label>Password<br /><input id="regPassword" type="password" required autocomplete="new-password" /></label>
+      <label>Username (public)<br /><input id="regUsername" type="text" required minlength="3" maxlength="32" pattern="[A-Za-z0-9_\\-\\.]+"></label>
+      <div class="auth-form-actions"><button type="submit">Create Account</button></div>
+    </form>
+
+    <div id="authStatus" class="auth-status"></div>
+  </section>
+
+  <!-- TAB 2: CONNECT -->
+  <section id="connectTab" class="tab-panel" role="tabpanel" aria-labelledby="tabBtn-connect">
+    <h2>Connect Users</h2>
+    <div class="connect-block">
+      <h3>Your Connect Key</h3>
+      <div id="myConnectKey" class="connect-key mono selectable">--</div>
+      <div class="connect-actions">
+        <button id="regenKeyBtn" type="button">Generate</button>
+        <button id="copyKeyBtn" type="button">Copy</button>
+      </div>
+      <p class="connect-help">Share this one-time key with the other user. When they paste it, you both become contacts. Each key links exactly one pair, then expires.</p>
+    </div>
+
+    <hr />
+
+    <div class="connect-block">
+      <h3>Paste Partner's Key</h3>
+      <input id="partnerKeyInput" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="Paste 34-char key" />
+      <button id="connectBtn" type="button">Connect</button>
+      <div id="connectStatus" class="connect-status"></div>
+    </div>
+  </section>
+
+  <!-- TAB 3: CHATS -->
+  <section id="chatTab" class="tab-panel" role="tabpanel" aria-labelledby="tabBtn-chat">
+    <div id="chatListView" class="chat-list-view">
+      <h2>Your Chats</h2>
+      <ul id="chatList" class="chat-list" role="list"></ul>
+      <div id="noChatsMsg" class="no-chats-msg">No contacts yet. Generate a key in Connect tab.</div>
+    </div>
+
+    <div id="threadView" class="thread-view hidden" role="dialog" aria-modal="true" aria-label="Chat thread">
+      <header id="threadHeader" class="thread-header">
+        <button id="threadBackBtn" type="button" class="icon-btn" aria-label="Back to chats">⟵</button>
+        <div id="threadUserName" class="thread-username">User</div>
+      </header>
+      <main id="threadMessages" class="thread-messages" aria-live="polite"></main>
+      <div id="typingIndicator" class="typing-indicator hidden" aria-hidden="true">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <form id="threadInputBar" class="thread-input-bar" autocomplete="off">
+        <textarea id="threadInput" rows="1" placeholder="Type a message" aria-label="Message input"></textarea>
+        <button id="threadSendBtn" type="submit" class="send-btn">▶</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- TAB BAR -->
+  <nav id="tabBar" role="tablist">
+    <button id="tabBtn-setup"   role="tab" aria-controls="setupTab"   aria-selected="true"  data-tab="setup">Setup</button>
+    <button id="tabBtn-connect" role="tab" aria-controls="connectTab" aria-selected="false" data-tab="connect">Connect</button>
+    <button id="tabBtn-chat"    role="tab" aria-controls="chatTab"    aria-selected="false" data-tab="chat">Chats</button>
+  </nav>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script>
+    // Your Firebase config
+    var firebaseConfig = {
+      apiKey: "AIzaSyDzI58aOke-0K1j7v-oiIY3ArxQWD_eftg",
+      authDomain: "algebrastring-8e4d9.firebaseapp.com",
+      projectId: "algebrastring-8e4d9",
+      storageBucket: "algebrastring-8e4d9.firebasestorage.app",
+      messagingSenderId: "509455083782",
+      appId: "1:509455083782:web:c327d9afb1319441911687",
+      measurementId: "G-ZY64V2VH4D"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+    window.auth = firebase.auth();
+    window.db = firebase.firestore();
+  </script>
+
+  <script src="app.js"></script>
+</body>
+</html>
