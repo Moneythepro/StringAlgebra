@@ -323,18 +323,22 @@ html, body {
   flex-direction: column;
   gap: 6px;
 }
+
 .msg-row {
   display: flex;
   max-width: 80%;
 }
+
 .msg-row.own {
   align-self: flex-end;
   justify-content: flex-end;
 }
+
 .msg-row.other {
   align-self: flex-start;
   justify-content: flex-start;
 }
+
 .msg-bubble {
   background: #111;
   padding: 6px 8px;
@@ -346,19 +350,38 @@ html, body {
   flex-direction: column;
   gap: 2px;
   animation: bubbleIn 0.2s ease-out;
+  color: #fff; /* White text for all bubbles */
 }
+
 .msg-row.own .msg-bubble {
-  background: #0b0;
-  color: #000;
-  border: 1px solid #080;
+  background: #111;       /* Same color as other bubbles */
+  border: 1px solid #222; /* Same border */
+  color: #fff;            /* White text */
 }
+
 .msg-text {
   word-wrap: break-word;
 }
+
 .msg-time {
   font-size: 10px;
   color: #888;
   align-self: flex-end;
+}
+
+.msg-row.own .msg-time {
+  color: red;             /* Timestamp in red for own messages */
+}
+
+@keyframes bubbleIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ---------- TYPING INDICATOR ---------- */
