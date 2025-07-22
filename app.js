@@ -276,6 +276,25 @@ SA.unsubscribeAuth = SA.auth.onAuthStateChanged(async (user) => {
   }
 });
 
+function switchTab(tabName) {
+  // Hide all tab panels
+  document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+  // Show the selected tab
+  const targetTab = document.getElementById(tabName + 'Tab');
+  if (targetTab) targetTab.classList.add('active');
+
+  // Update aria-selected for bottom tab bar
+  document.querySelectorAll('#tabBar [role="tab"]').forEach(btn => {
+    btn.setAttribute('aria-selected', btn.dataset.tab === tabName ? "true" : "false");
+  });
+}
+
+// Attach click events to both tab systems
+document.querySelectorAll('#tabBar [data-tab], #geekMenu [data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
 // Thread View
 SA.showThread = function () {
   threadViewEl.classList.remove("hidden");
