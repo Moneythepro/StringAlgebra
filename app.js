@@ -27,6 +27,48 @@ const qs  = (sel, root = document) => root.querySelector(sel);
 const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 const on  = (el, ev, fn, opts) => el && el.addEventListener(ev, fn, opts);
 
+// Boot Screen & Geek Menu
+(function initBootScreen() {
+  const bootScreen = qs("#bootScreen");
+  const bootTextEl = qs("#bootText");
+  const geekMenu = qs("#geekMenu");
+  const bootLines = [
+    ">>> Initializing StringAlgebra...",
+    ">>> Loading modules [auth, firestore, chat]...",
+    ">>> Establishing secure terminal...",
+    ">>> Boot complete.",
+    ">>> Press ENTER or tap to continue."
+  ];
+  let lineIndex = 0;
+
+  function typeLine() {
+    if (lineIndex < bootLines.length) {
+      const line = document.createElement("div");
+      line.textContent = bootLines[lineIndex++];
+      bootTextEl.appendChild(line);
+      setTimeout(typeLine, 500);
+    } else {
+      bootScreen.addEventListener("click", endBoot);
+      window.addEventListener("keydown", (e) => { if (e.key === "Enter") endBoot(); });
+    }
+  }
+
+  function endBoot() {
+    bootScreen.style.display = "none";
+    geekMenu.style.display = "flex";
+  }
+
+  // Geek menu buttons switch tabs
+  qsa("#geekMenu .geek-btn").forEach(btn => {
+    on(btn, "click", () => {
+      geekMenu.style.display = "none";
+      SA.switchTab(btn.dataset.tab);
+    });
+  });
+
+  typeLine();
+})();
+
 // Tab panels + buttons
 const tabPanels = {
   setup: qs("#setupTab"),
