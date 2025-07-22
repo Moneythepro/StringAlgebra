@@ -58,14 +58,6 @@ const on  = (el, ev, fn, opts) => el && el.addEventListener(ev, fn, opts);
     geekMenu.style.display = "flex";
   }
 
-  // Geek menu buttons switch tabs
-  qsa("#geekMenu .geek-btn").forEach(btn => {
-    on(btn, "click", () => {
-      geekMenu.style.display = "none";
-      SA.switchTab(btn.dataset.tab);
-    });
-  });
-
   typeLine();
 })();
 
@@ -75,23 +67,11 @@ const tabPanels = {
   connect: qs("#connectTab"),
   chat: qs("#chatTab"),
 };
+
 const tabBtns = {
   setup: qs("#tabBtn-setup"),
   connect: qs("#tabBtn-connect"),
   chat: qs("#tabBtn-chat"),
-};
-
-// Tab Panels and Buttons
-const tabPanels = {
-  setup: document.getElementById("setupTab"),
-  connect: document.getElementById("connectTab"),
-  chat: document.getElementById("chatTab"),
-};
-
-const tabBtns = {
-  setup: document.getElementById("tabBtn-setup"),
-  connect: document.getElementById("tabBtn-connect"),
-  chat: document.getElementById("tabBtn-chat"),
 };
 
 // Switch Tab Function
@@ -105,19 +85,23 @@ function switchTab(tabName) {
   // Activate selected tab
   if (tabPanels[tabName]) tabPanels[tabName].classList.add("active");
   if (tabBtns[tabName]) tabBtns[tabName].setAttribute("aria-selected", "true");
+
+  // Hide thread if leaving chat tab
+  if (tabName !== "chat" && SA.hideThread) SA.hideThread();
 }
+SA.switchTab = switchTab;
 
 // Attach events to bottom tab buttons
 Object.entries(tabBtns).forEach(([name, btn]) => {
-  btn.addEventListener("click", () => switchTab(name));
+  on(btn, "click", () => switchTab(name));
 });
 
 // Attach events to geek menu buttons
-document.querySelectorAll("#geekMenu [data-tab]").forEach(btn => {
-  btn.addEventListener("click", () => {
+qsa("#geekMenu [data-tab]").forEach(btn => {
+  on(btn, "click", () => {
     const target = btn.getAttribute("data-tab");
     switchTab(target);
-    document.getElementById("geekMenu").style.display = "none";
+    qs("#geekMenu").style.display = "none";
   });
 });
 
