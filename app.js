@@ -91,6 +91,9 @@ SA.switchTab = function (tabName) {
   // Activate selected tab
   if (tabPanels[tabName]) tabPanels[tabName].classList.add("active");
   if (tabBtns[tabName]) tabBtns[tabName].setAttribute("aria-selected", "true");
+
+  // Close thread view if leaving chat tab
+  if (tabName !== "chat") SA.hideThread();
 };
 
 // Attach click events to tab buttons
@@ -189,16 +192,6 @@ SA.copyText = async function (str) {
 SA.threadIdFor = function (uidA, uidB) {
   return [uidA, uidB].sort().join("_");
 };
-
-// Tab Switching
-SA.switchTab = function (name) {
-  Object.entries(tabPanels).forEach(([k, el]) => el && el.classList.toggle("active", k === name));
-  Object.entries(tabBtns).forEach(([k, btn]) => btn && btn.setAttribute("aria-selected", k === name ? "true" : "false"));
-  if (name !== "chat") SA.hideThread();
-};
-on(tabBtns.setup, "click", () => SA.switchTab("setup"));
-on(tabBtns.connect, "click", () => SA.switchTab("connect"));
-on(tabBtns.chat, "click", () => SA.switchTab("chat"));
 
 // Auth Mode Toggle
 function setAuthMode(mode) {
@@ -442,17 +435,6 @@ on(partnerKeyInput, "keydown", e => {
     SA.connectWithKey();
   }
 });
-
-// Auto-generate key on Connect tab
-SA.autoKeyOnTab = true;
-(function () {
-  const btn = tabBtns.connect;
-  if (!btn) return;
-  on(btn, "click", () => {
-    if (!SA.autoKeyOnTab) return;
-    if (SA.currentUser && !SA.cachedKeys) SA.generateConnectKey();
-  });
-})();
 
 // ====== CONTACTS SNAPSHOT ======
 SA.contactsUnsub = null;
