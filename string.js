@@ -342,3 +342,494 @@ window.SA_userDoc   = ()=>SA.currentUserDoc;
  * END PART 1
  * Request PART 2 when ready: Connect-Key generation + linking.
  * ------------------------------------------------------- */
+
+/* =========================================================
+ * StringAlgebra v0.1 Terminal Chat MVP
+ * ---------------------------------------------------------
+ * PART 2 of 4 — Connect-Key Generation & Linking Contacts
+ * ---------------------------------------------------------
+ * Paste THIS *after* PART 1 code in app.js.
+ *
+ * Contents:
+ *   - Random 34-char key generator
+ *   - Generate + display + store one-time connect key
+ *   - Copy key to clipboard
+ *   - Consume partner key to create 2-way contacts
+ *   - Basic connect status UI feedback
+ *
+ * Firestore structure used here:
+ *   connectCodes/{key} = {
+ *     owner: <uid>,
+ *     ownerUsername: <string>,
+ *     used: false|true,
+ *     consumedBy: <uid|null>,
+ *     createdAt: serverTimestamp,
+ *     consumedAt: serverTimestamp|null
+ *   }
+ *
+ * Contacts are stored symmetrically:
+ *   users/{uid}/contacts/{otherUid} = {
+ *     username: <other user's username>,
+ *     addedAt: serverTimestamp
+ *   }
+ *
+ * PART 3 will live-update chat list from these contacts.
+ * ======================================================= */
+
+/* ---------------------------------------------------------
+ * RANDOM CONNECT KEY
+ * Safe chars (no slash '/'; avoid confusing 0/O, 1/l/I).
+ * Includes some symbols for “geek/terminal” feel.
+ * ------------------------------------------------------- */
+SA.randKey = function randKey(len = 34) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789-_*#@";
+  const arr = new Uint32Array(len);
+  (window.crypto || window.msCrypto).getRandomValues(arr);
+  let out = "";
+  for (let i = 0; i < len; i++) {
+    out += chars[arr[i] % chars.length];
+  }
+  return out;
+};
+
+/* ---------------------------------------------------------
+ * UI: SHOW MY KEY
+ * ------------------------------------------------------- */
+SA.showMyConnectKey = function showMyConnectKey(str) {
+  if (myConnectKeyEl) myConnectKeyEl.textContent = str || "--";
+};
+
+/* ---------------------------------------------------------
+ * GENERATE KEY HANDLER
+ * Creates doc connectCodes/{key}. Overwrites if re-generated.
+ * Previous unused keys remain in DB (garbage is fine for MVP).
+ * ------------------------------------------------------- */
+SA.generateConnectKey = async function generateConnectKey() {
+  if (!SA.currentUser) {
+    SA.toast("Sign in first.", "warn");
+    return;
+  }
+  const uid = SA.currentUser.uid;
+  const username = (SA.currentUserDoc && SA.currentUserDoc.username) || "User";
+  const key = SA.randKey(34);
+
+  // optimistic UI
+  SA.cachedKeys = key;
+  SA.showMyConnectKey(key);
+
+  try {
+    await SA.db.collection("connectCodes").doc(key).set({
+      owner: uid,
+      ownerUsername: username,
+      used: false,
+      consumedBy: null,
+      createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+      consumedAt: null,
+    });
+    SA.toast("Key generated.", "success");
+  } catch (err) {
+    console.error("generateConnectKey failed", err);
+    SA.toast("Key save failed", "error");
+    SA.showMyConnectKey("--");
+    SA.cachedKeys = null;
+  }
+};
+
+/* ---------------------------------------------------------
+ * COPY CURRENT KEY
+ * ------------------------------------------------------- */
+SA.copyMyConnectKey = function copyMyConnectKey() {
+  if (!SA.cachedKeys) {
+    SA.toast("No key. Generate one.", "warn");
+    return;
+  }
+  SA.copyText(SA.cachedKeys);
+};
+
+/* ---------------------------------------------------------
+ * CONNECT WITH PARTNER KEY
+ * Steps:
+ *   1. Read user input
+ *   2. Fetch connectCodes/{key}
+ *   3. Validate: exists, not used, not mine
+ *   4. Create symmetric contact docs in a batch
+ *   5. Mark key used
+ *   6. Clear input + message
+ * PART 3 snapshot will pull new contact into chat list.
+ * ------------------------------------------------------- */
+SA.connectWithKey = async function connectWithKey() {
+  if (!SA.currentUser) {
+    SA.toast("Sign in first.", "warn");
+    connectStatusEl.textContent = "Sign in required.";
+    return;
+  }
+  const uid = SA.currentUser.uid;
+  const myUsername = (SA.currentUserDoc && SA.currentUserDoc.username) || "User";
+
+  const entered = (partnerKeyInput.value || "").trim();
+  if (!entered) {
+    connectStatusEl.textContent = "Enter a key.";
+    return;
+  }
+  connectStatusEl.textContent = "Checking key...";
+
+  const codeRef = SA.db.collection("connectCodes").doc(entered);
+  let codeSnap;
+  try {
+    codeSnap = await codeRef.get();
+  } catch (err) {
+    console.error("connectWithKey get error", err);
+    connectStatusEl.textContent = "Network error.";
+    SA.toast("Network error", "error");
+    return;
+  }
+  if (!codeSnap.exists) {
+    connectStatusEl.textContent = "Invalid key.";
+    SA.toast("Key not found", "error");
+    return;
+  }
+  const codeData = codeSnap.data();
+
+  if (codeData.used) {
+    connectStatusEl.textContent = "Key already used.";
+    SA.toast("Key used", "warn");
+    return;
+  }
+  if (codeData.owner === uid) {
+    connectStatusEl.textContent = "That's your own key.";
+    SA.toast("Cannot connect to self", "warn");
+    return;
+  }
+
+  // Fetch owner user doc for username
+  let ownerUsername = codeData.ownerUsername;
+  try {
+    const ownerSnap = await SA.db.collection("users").doc(codeData.owner).get();
+    if (ownerSnap.exists) {
+      const d = ownerSnap.data();
+      ownerUsername = d.username || ownerUsername || "User";
+    }
+  } catch (err) {
+    console.warn("Failed to fetch owner user doc; using cached username.", err);
+  }
+
+  // Check if already contacts to avoid duplicate writes
+  const myContactRef = SA.db.collection("users").doc(uid)
+    .collection("contacts").doc(codeData.owner);
+  try {
+    const myContactSnap = await myContactRef.get();
+    if (myContactSnap.exists) {
+      connectStatusEl.textContent = "Already connected.";
+      SA.toast("Already contacts", "info");
+      // Mark key used anyway? Let's mark consumed but harmless.
+      try {
+        await codeRef.update({
+          used: true,
+          consumedBy: uid,
+          consumedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+        });
+      } catch (_) {}
+      return;
+    }
+  } catch (err) {
+    console.warn("Contact existence check failed", err);
+  }
+
+  // Symmetric contact writes
+  const otherUid = codeData.owner;
+  const otherContactRef = SA.db.collection("users").doc(otherUid)
+    .collection("contacts").doc(uid);
+  const batch = SA.db.batch();
+  const ts = window.firebase.firestore.FieldValue.serverTimestamp();
+  batch.set(myContactRef, {
+    username: ownerUsername,
+    addedAt: ts,
+  }, { merge: true });
+  batch.set(otherContactRef, {
+    username: myUsername,
+    addedAt: ts,
+  }, { merge: true });
+  batch.update(codeRef, {
+    used: true,
+    consumedBy: uid,
+    consumedAt: ts,
+  });
+
+  connectStatusEl.textContent = "Connecting...";
+  try {
+    await batch.commit();
+    connectStatusEl.textContent = "Connected!";
+    SA.toast("Users connected", "success");
+    partnerKeyInput.value = "";
+    // refresh contacts if loader present (implemented in PART 3)
+    if (SA.loadContacts) SA.loadContacts();
+  } catch (err) {
+    console.error("Contact connect batch failed", err);
+    connectStatusEl.textContent = "Connect failed.";
+    SA.toast("Connect failed", "error");
+  }
+};
+
+/* ---------------------------------------------------------
+ * EVENT LISTENERS (Connect Tab)
+ * ------------------------------------------------------- */
+on(regenKeyBtn, "click", SA.generateConnectKey);
+on(copyKeyBtn,  "click", SA.copyMyConnectKey);
+on(connectBtn,  "click", SA.connectWithKey);
+
+/* Also fire connect on Enter in input field */
+on(partnerKeyInput, "keydown", (e)=>{
+  if (e.key === "Enter") {
+    e.preventDefault();
+    SA.connectWithKey();
+  }
+});
+
+/* ---------------------------------------------------------
+ * OPTIONAL: Auto-generate key when switching to Connect tab
+ * (comment out to disable auto generation)
+ * ------------------------------------------------------- */
+SA.autoKeyOnTab = true;
+(function setupTabObserver(){
+  const btn = tabBtns.connect;
+  if (!btn) return;
+  on(btn, "click", ()=>{
+    if (!SA.autoKeyOnTab) return;
+    // generate only if signed in & we don't already have a cached key
+    if (SA.currentUser && !SA.cachedKeys) {
+      SA.generateConnectKey();
+    }
+  });
+})();
+
+/* ---------------------------------------------------------
+ * END PART 2
+ * Request PART 3 when ready: Contacts snapshot + Chat List.
+ * ------------------------------------------------------- */
+
+/* =========================================================
+ * StringAlgebra v0.1 Terminal Chat MVP
+ * ---------------------------------------------------------
+ * PART 3 of 4 — Contact List + Chat List Logic
+ * ---------------------------------------------------------
+ * Paste THIS *after* PART 2 code in app.js.
+ *
+ * Contents:
+ *   - Live snapshot of user's contacts
+ *   - Renders chat list
+ *   - Opens thread on click (delegated to PART 4)
+ * ======================================================= */
+
+/* ---------------------------------------------------------
+ * LOAD CONTACTS (real-time)
+ * ------------------------------------------------------- */
+SA.contactsUnsub = null;
+SA.loadContacts = function loadContacts() {
+  if (!SA.currentUser) return;
+  if (SA.contactsUnsub) {
+    SA.contactsUnsub(); // detach previous listener
+  }
+  const uid = SA.currentUser.uid;
+  const contactsRef = SA.db.collection("users").doc(uid).collection("contacts").orderBy("addedAt", "desc");
+
+  SA.contactsUnsub = contactsRef.onSnapshot((snap)=>{
+    SA.contacts = {};
+    snap.forEach(doc=>{
+      SA.contacts[doc.id] = doc.data();
+    });
+    SA.renderChatList();
+  }, (err)=>{
+    console.error("Contacts snapshot error", err);
+    SA.toast("Failed to load contacts", "error");
+  });
+};
+
+/* ---------------------------------------------------------
+ * RENDER CHAT LIST
+ * ------------------------------------------------------- */
+SA.renderChatList = function renderChatList() {
+  chatListEl.innerHTML = "";
+  const keys = Object.keys(SA.contacts);
+  if (keys.length === 0) {
+    noChatsMsgEl.style.display = "block";
+    return;
+  }
+  noChatsMsgEl.style.display = "none";
+  keys.forEach(uid=>{
+    const data = SA.contacts[uid];
+    const li = document.createElement("li");
+    li.className = "chat-item";
+    li.dataset.uid = uid;
+    li.textContent = data.username || "User";
+    chatListEl.appendChild(li);
+  });
+};
+
+/* ---------------------------------------------------------
+ * OPEN THREAD (click on chat)
+ * Will call SA.openThread(uid)
+ * ------------------------------------------------------- */
+SA.openThread = function openThread(uid) {
+  if (!uid || !SA.currentUser) return;
+  const data = SA.contacts[uid];
+  const name = (data && data.username) || "User";
+  threadUserNameEl.textContent = name;
+  SA.showThread();
+  // Load thread messages + typing (Part 4)
+  if (SA.loadThread) {
+    SA.loadThread(uid);
+  }
+};
+
+/* ---------------------------------------------------------
+ * CHAT LIST CLICK HANDLER
+ * ------------------------------------------------------- */
+on(chatListEl, "click", (e)=>{
+  const li = e.target.closest(".chat-item");
+  if (!li) return;
+  const uid = li.dataset.uid;
+  SA.openThread(uid);
+});
+
+/* ---------------------------------------------------------
+ * REFRESH CONTACTS AFTER LOGIN
+ * (PART 1 calls SA.loadContacts() if defined)
+ * ------------------------------------------------------- */
+
+/* ---------------------------------------------------------
+ * END PART 3
+ * Request PART 4 when ready: Thread messages & sending.
+ * ------------------------------------------------------- */
+
+/* =========================================================
+ * StringAlgebra v0.1 Terminal Chat MVP
+ * ---------------------------------------------------------
+ * PART 4 of 4 — Thread Messages & Sending
+ * ---------------------------------------------------------
+ * Paste THIS *after* PART 3 code in app.js.
+ *
+ * Contents:
+ *   - Thread loader (messages snapshot)
+ *   - Message renderer (left/right bubbles)
+ *   - Sending messages
+ *   - Typing indicator (basic)
+ * ======================================================= */
+
+/* ---------------------------------------------------------
+ * LOAD THREAD
+ * Thread = messages between currentUser and otherUid.
+ * Path: threads/{threadId}/messages/{msgId}
+ * threadId = sorted UIDs (uidA_uidB)
+ * ------------------------------------------------------- */
+SA.loadThread = function loadThread(otherUid) {
+  SA.hideThread(); // ensure any previous thread is closed/unsubscribed
+  SA.activeThread = { otherUid, threadId: SA.threadIdFor(SA.currentUser.uid, otherUid) };
+  const threadId = SA.activeThread.threadId;
+
+  // Show UI
+  SA.showThread();
+  threadMessagesEl.innerHTML = "<div class='loading'>Loading...</div>";
+
+  // Unsubscribe old listeners if any
+  if (SA.activeThread.unsubMsgs) SA.activeThread.unsubMsgs();
+
+  // Listen to messages
+  const msgsRef = SA.db.collection("threads").doc(threadId).collection("messages")
+    .orderBy("createdAt", "asc");
+
+  SA.activeThread.unsubMsgs = msgsRef.onSnapshot((snap)=>{
+    threadMessagesEl.innerHTML = "";
+    snap.forEach(doc=>{
+      SA.renderMessage(doc.data(), doc.id);
+    });
+    threadMessagesEl.scrollTop = threadMessagesEl.scrollHeight;
+  }, (err)=>{
+    console.error("Thread msgs error", err);
+    SA.toast("Failed to load messages", "error");
+  });
+};
+
+/* ---------------------------------------------------------
+ * RENDER MESSAGE
+ * ------------------------------------------------------- */
+SA.renderMessage = function renderMessage(data, msgId) {
+  const isOwn = (data.from === SA.currentUser.uid);
+  const wrap = document.createElement("div");
+  wrap.className = "msg-row " + (isOwn ? "own" : "other");
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble";
+  const textSpan = document.createElement("span");
+  textSpan.className = "msg-text";
+  textSpan.textContent = data.text || "";
+  const timeSpan = document.createElement("span");
+  timeSpan.className = "msg-time";
+  if (data.createdAt && data.createdAt.toDate) {
+    const d = data.createdAt.toDate();
+    timeSpan.textContent = d.getHours().toString().padStart(2,"0") + ":" + d.getMinutes().toString().padStart(2,"0");
+  } else {
+    timeSpan.textContent = "--:--";
+  }
+  bubble.appendChild(textSpan);
+  bubble.appendChild(timeSpan);
+  wrap.appendChild(bubble);
+  threadMessagesEl.appendChild(wrap);
+};
+
+/* ---------------------------------------------------------
+ * SEND MESSAGE
+ * ------------------------------------------------------- */
+SA.sendThreadMessage = async function sendThreadMessage(e) {
+  e.preventDefault();
+  if (!SA.activeThread || !SA.activeThread.otherUid) return;
+  const txt = threadInputEl.value.trim();
+  if (!txt) return;
+  threadInputEl.value = "";
+  threadInputEl.focus();
+  autoResizeThreadInput();
+
+  const threadId = SA.activeThread.threadId;
+  try {
+    await SA.db.collection("threads").doc(threadId)
+      .collection("messages").add({
+        from: SA.currentUser.uid,
+        text: txt,
+        createdAt: window.firebase.firestore.FieldValue.serverTimestamp()
+      });
+  } catch (err) {
+    console.error("Send message failed", err);
+    SA.toast("Send failed", "error");
+  }
+};
+on(threadInputBarEl, "submit", SA.sendThreadMessage);
+
+/* ---------------------------------------------------------
+ * TYPING INDICATOR (Basic)
+ * We just show/hide a 3-dot indicator on input events.
+ * ------------------------------------------------------- */
+let typingTimeout = null;
+function showTyping() {
+  typingIndicatorEl.classList.remove("hidden");
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(()=>{
+    typingIndicatorEl.classList.add("hidden");
+  }, 1500);
+}
+on(threadInputEl, "input", showTyping);
+
+/* ---------------------------------------------------------
+ * FINAL EXPORTS
+ * ------------------------------------------------------- */
+SA.debug = { SA }; // for console debugging
+
+/* =========================================================
+ * END PART 4 — app.js complete!
+ * You now have:
+ *   - Auth (Part 1)
+ *   - Connect Keys (Part 2)
+ *   - Chat List (Part 3)
+ *   - Thread Messaging (Part 4)
+ *
+ * Next steps:
+ *   - Add CSS styles in style.css (terminal look).
+ *   - Test Firestore rules & structure.
+ * ======================================================= */
