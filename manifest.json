@@ -1,8 +1,8 @@
 {
-  "name": "StringAlgebra",
+  "name": "AlgebraString",
   "short_name": "Algebra",
-  "description": "Terminal Chat – StringAlgebra PWA",
-  "start_url": "index.html",
+  "description": "AlgebraString - Terminal-inspired real-time chat with PWA support.",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
