@@ -446,3 +446,61 @@ html, body {
 /* =========================================================
  * END PART 3 — CSS complete!
  * ======================================================= */
+
+/* =========================================================
+ * Boot Screen & Geek Menu
+ * ======================================================= */
+
+/* Boot Screen */
+#bootScreen {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  color: #0f0;
+  font-family: monospace;
+  font-size: 16px;
+  padding: 20px;
+  white-space: pre-line;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 9999;
+}
+#bootCursor {
+  display: inline-block;
+  width: 10px;
+  background: #0f0;
+  margin-left: 2px;
+  animation: blink 0.8s infinite;
+}
+@keyframes blink {
+  0%, 50% { background: #0f0; }
+  51%, 100% { background: transparent; }
+}
+
+/* Geek Menu */
+#geekMenu {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #000;
+  font-family: monospace;
+  z-index: 150;
+}
+.geek-btn {
+  background: transparent;
+  border: 2px solid #0f0;
+  color: #0f0;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.geek-btn:hover {
+  background: #0f0;
+  color: #000;
+}
