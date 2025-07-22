@@ -81,6 +81,23 @@ const tabBtns = {
   chat: qs("#tabBtn-chat"),
 };
 
+// Tab Switching Logic
+SA.switchTab = function (tabName) {
+  // Hide all panels
+  Object.values(tabPanels).forEach(panel => panel && panel.classList.remove("active"));
+  // Deselect all tab buttons
+  Object.values(tabBtns).forEach(btn => btn && btn.setAttribute("aria-selected", "false"));
+
+  // Activate selected tab
+  if (tabPanels[tabName]) tabPanels[tabName].classList.add("active");
+  if (tabBtns[tabName]) tabBtns[tabName].setAttribute("aria-selected", "true");
+};
+
+// Attach click events to tab buttons
+Object.entries(tabBtns).forEach(([name, btn]) => {
+  on(btn, "click", () => SA.switchTab(name));
+});
+
 // Auth UI
 const authModeLoginBtn    = qs("#authModeLogin");
 const authModeRegisterBtn = qs("#authModeRegister");
