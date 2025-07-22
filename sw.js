@@ -35,7 +35,7 @@ self.addEventListener("fetch", event => {
     caches.match(event.request)
       .then(response => response || fetch(event.request))
       .catch(() => {
-        // Offline fallback (return index.html for navigation requests)
+        // Offline fallback for navigation requests
         if (event.request.mode === "navigate") {
           return caches.match("./index.html");
         }
