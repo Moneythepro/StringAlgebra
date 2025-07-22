@@ -81,24 +81,44 @@ const tabBtns = {
   chat: qs("#tabBtn-chat"),
 };
 
-// Tab Switching Logic
-SA.switchTab = function (tabName) {
+// Tab Panels and Buttons
+const tabPanels = {
+  setup: document.getElementById("setupTab"),
+  connect: document.getElementById("connectTab"),
+  chat: document.getElementById("chatTab"),
+};
+
+const tabBtns = {
+  setup: document.getElementById("tabBtn-setup"),
+  connect: document.getElementById("tabBtn-connect"),
+  chat: document.getElementById("tabBtn-chat"),
+};
+
+// Switch Tab Function
+function switchTab(tabName) {
   // Hide all panels
   Object.values(tabPanels).forEach(panel => panel && panel.classList.remove("active"));
+
   // Deselect all tab buttons
   Object.values(tabBtns).forEach(btn => btn && btn.setAttribute("aria-selected", "false"));
 
   // Activate selected tab
   if (tabPanels[tabName]) tabPanels[tabName].classList.add("active");
   if (tabBtns[tabName]) tabBtns[tabName].setAttribute("aria-selected", "true");
+}
 
-  // Close thread view if leaving chat tab
-  if (tabName !== "chat") SA.hideThread();
-};
-
-// Attach click events to tab buttons
+// Attach events to bottom tab buttons
 Object.entries(tabBtns).forEach(([name, btn]) => {
-  on(btn, "click", () => SA.switchTab(name));
+  btn.addEventListener("click", () => switchTab(name));
+});
+
+// Attach events to geek menu buttons
+document.querySelectorAll("#geekMenu [data-tab]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const target = btn.getAttribute("data-tab");
+    switchTab(target);
+    document.getElementById("geekMenu").style.display = "none";
+  });
 });
 
 // Auth UI
@@ -276,24 +296,6 @@ SA.unsubscribeAuth = SA.auth.onAuthStateChanged(async (user) => {
   }
 });
 
-function switchTab(tabName) {
-  // Hide all tab panels
-  document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
-
-  // Show the selected tab
-  const targetTab = document.getElementById(tabName + 'Tab');
-  if (targetTab) targetTab.classList.add('active');
-
-  // Update aria-selected for bottom tab bar
-  document.querySelectorAll('#tabBar [role="tab"]').forEach(btn => {
-    btn.setAttribute('aria-selected', btn.dataset.tab === tabName ? "true" : "false");
-  });
-}
-
-// Attach click events to both tab systems
-document.querySelectorAll('#tabBar [data-tab], #geekMenu [data-tab]').forEach(btn => {
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
 
 // Thread View
 SA.showThread = function () {
@@ -597,3 +599,11 @@ on(threadInputEl, "input", showTyping);
 
 // ====== DEBUG EXPORT ======
 SA.debug = { SA };
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js")
+      .then(reg => console.log("SW registered:", reg.scope))
+      .catch(err => console.error("SW registration failed:", err));
+  });
+}
