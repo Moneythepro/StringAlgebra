@@ -1,21 +1,24 @@
 /* =========================================================
- * StringAlgebra v0.1 — Terminal Style UI
+ * StringAlgebra v0.2 — Terminal Style UI (Enhanced)
  * ---------------------------------------------------------
  * PART 1 of 3
  * ---------------------------------------------------------
- * Core Layout, Colors, Tabs, and Auth Forms
+ * Core Layout, Colors, Tabs, Boot Screen, and Auth Forms
  * ======================================================= */
 
-/* ---------- ROOT COLORS ---------- */
+/* ---------- ROOT COLORS & EFFECTS ---------- */
 :root {
   --c-bg: #000;
-  --c-fg: #0f0; /* Terminal green */
-  --c-accent-red: #ff3d3d;
-  --c-accent-blue: #3da9ff;
+  --c-fg: #00ff7f; /* Neon green */
+  --c-fg-dim: #00cc66;
+  --c-accent-red: #ff4d4d;
+  --c-accent-blue: #4dc3ff;
   --c-accent-green: #00ff9c;
   --c-accent-orange: #ffb84d;
 
   --font-mono: "Fira Code", "Courier New", monospace;
+  --glow: 0 0 5px #00ff7f, 0 0 10px #00ff7f, 0 0 20px #00ff7f;
+  --glow-red: 0 0 5px #ff4d4d, 0 0 10px #ff4d4d;
 }
 
 /* ---------- GLOBAL RESET ---------- */
@@ -27,13 +30,80 @@ html, body {
   background: var(--c-bg);
   color: var(--c-fg);
   font-family: var(--font-mono);
-  line-height: 1.4;
+  line-height: 1.5;
   -webkit-text-size-adjust: 100%;
+  overflow: hidden;
 }
 
 .hidden { display: none !important; }
 .mono { font-family: var(--font-mono); }
 .selectable { user-select: text; }
+
+/* ---------- BOOT SCREEN ---------- */
+#bootScreen {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  color: var(--c-fg);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  padding: 20px;
+  white-space: pre-line;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 9999;
+  text-shadow: var(--glow);
+  animation: crt-flicker 2s infinite alternate;
+}
+@keyframes crt-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    opacity: 0.9;
+  }
+}
+#bootCursor {
+  display: inline-block;
+  width: 10px;
+  background: var(--c-fg);
+  margin-left: 2px;
+  animation: blink 0.8s infinite;
+}
+@keyframes blink {
+  0%, 50% { background: var(--c-fg); }
+  51%, 100% { background: transparent; }
+}
+
+/* ---------- GEEK MENU ---------- */
+#geekMenu {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #000;
+  font-family: var(--font-mono);
+  z-index: 150;
+}
+.geek-btn {
+  background: transparent;
+  border: 2px solid var(--c-fg);
+  color: var(--c-fg);
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s, color 0.2s;
+  text-shadow: var(--glow);
+}
+.geek-btn:hover {
+  background: var(--c-fg);
+  color: #000;
+  transform: scale(1.05);
+}
 
 /* ---------- TOASTS ---------- */
 #toastContainer {
@@ -54,25 +124,32 @@ html, body {
   color: var(--c-fg);
   opacity: 0;
   transform: translateY(10px);
-  transition: opacity 0.2s, transform 0.2s;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   border-radius: 3px;
+  text-shadow: var(--glow);
 }
 .toast.show {
   opacity: 1;
   transform: translateY(0);
 }
-.toast-success { color: var(--c-accent-green); }
-.toast-error   { color: var(--c-accent-red); }
-.toast-warn    { color: var(--c-accent-orange); }
-.toast-info    { color: var(--c-accent-blue); }
+.toast-success { color: var(--c-accent-green); text-shadow: 0 0 5px var(--c-accent-green); }
+.toast-error   { color: var(--c-accent-red);   text-shadow: 0 0 5px var(--c-accent-red); }
+.toast-warn    { color: var(--c-accent-orange); text-shadow: 0 0 5px var(--c-accent-orange); }
+.toast-info    { color: var(--c-accent-blue); text-shadow: 0 0 5px var(--c-accent-blue); }
 
 /* ---------- TAB PANELS ---------- */
 .tab-panel {
   display: none;
   padding: 60px 16px 70px;
+  transition: opacity 0.3s ease;
 }
 .tab-panel.active {
   display: block;
+  animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ---------- TAB BAR ---------- */
@@ -88,6 +165,7 @@ html, body {
   background: #111;
   border-top: 1px solid #222;
   z-index: 50;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.5);
 }
 #tabBar button {
   flex: 1;
@@ -96,11 +174,13 @@ html, body {
   color: var(--c-fg);
   padding: 8px 4px;
   font-size: 14px;
-  transition: color 0.2s;
+  transition: color 0.2s, transform 0.2s;
+  text-shadow: var(--glow);
 }
 #tabBar button[aria-selected="true"] {
   color: var(--c-accent-green);
   text-decoration: underline;
+  transform: scale(1.1);
 }
 
 /* ---------- AUTH FORMS ---------- */
@@ -116,12 +196,14 @@ html, body {
   color: var(--c-fg);
   padding: 6px 8px;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+  text-shadow: var(--glow);
 }
 .auth-mode-btn.is-active {
   background: var(--c-accent-green);
   color: #000;
   font-weight: bold;
+  transform: scale(1.05);
 }
 .auth-form {
   display: flex;
@@ -141,6 +223,12 @@ html, body {
   padding: 4px 6px;
   color: var(--c-fg);
   font-family: var(--font-mono);
+  transition: border 0.2s;
+}
+.auth-form input:focus {
+  border-color: var(--c-accent-green);
+  outline: none;
+  box-shadow: 0 0 5px var(--c-accent-green);
 }
 .auth-form-actions {
   text-align: right;
@@ -151,19 +239,21 @@ html, body {
   border: none;
   padding: 4px 10px;
   cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+.auth-form-actions button:hover {
+  background: #00ff7f;
+  transform: scale(1.05);
 }
 .auth-status {
   margin-top: 6px;
   font-size: 13px;
   color: var(--c-accent-orange);
+  text-shadow: 0 0 3px var(--c-accent-orange);
 }
 
-/* ---------------------------------------------------------
- * END PART 1 — Request PART 2 for Connect & Chat styling
- * ------------------------------------------------------- */
-
 /* =========================================================
- * StringAlgebra v0.1 — Terminal Style UI
+ * StringAlgebra v0.2 — Terminal Style UI (Enhanced)
  * ---------------------------------------------------------
  * PART 2 of 3
  * ---------------------------------------------------------
@@ -174,17 +264,25 @@ html, body {
 #connectTab {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   align-items: stretch;
+  animation: fadeIn 0.4s ease;
 }
 #myConnectKey {
   font-size: 14px;
   color: var(--c-accent-blue);
   text-align: center;
   word-break: break-all;
-  padding: 6px;
+  padding: 8px;
   border: 1px dashed var(--c-accent-blue);
   border-radius: 4px;
+  background: rgba(0,0,0,0.6);
+  text-shadow: 0 0 5px var(--c-accent-blue);
+  animation: pulse-blue 2s infinite alternate;
+}
+@keyframes pulse-blue {
+  0% { box-shadow: 0 0 5px var(--c-accent-blue); }
+  100% { box-shadow: 0 0 15px var(--c-accent-blue); }
 }
 .connect-actions {
   display: flex;
@@ -195,13 +293,15 @@ html, body {
   flex: 1;
   background: #111;
   border: 1px solid #222;
-  padding: 6px 0;
+  padding: 8px 0;
   color: var(--c-accent-green);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.2s;
+  text-shadow: 0 0 5px var(--c-accent-green);
 }
 .connect-actions button:hover {
   background: #1a1a1a;
+  transform: translateY(-2px);
 }
 .partner-key-wrap {
   display: flex;
@@ -211,21 +311,33 @@ html, body {
 .partner-key-wrap input {
   background: #000;
   border: 1px solid #333;
-  padding: 4px;
+  padding: 6px;
   color: var(--c-fg);
   font-family: var(--font-mono);
+  transition: border 0.2s;
+}
+.partner-key-wrap input:focus {
+  border-color: var(--c-accent-blue);
+  box-shadow: 0 0 6px var(--c-accent-blue);
+  outline: none;
 }
 .partner-key-wrap button {
   background: var(--c-accent-blue);
   color: #000;
   border: none;
-  padding: 6px 0;
+  padding: 8px 0;
   cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+.partner-key-wrap button:hover {
+  background: #4dc3ff;
+  transform: scale(1.05);
 }
 #connectStatus {
   font-size: 13px;
   text-align: center;
   color: var(--c-accent-orange);
+  text-shadow: 0 0 4px var(--c-accent-orange);
 }
 
 /* ---------- CHAT TAB ---------- */
@@ -233,6 +345,7 @@ html, body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  animation: fadeIn 0.3s ease;
 }
 #chatList {
   list-style: none;
@@ -240,24 +353,30 @@ html, body {
   margin: 0;
   flex: 1;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-accent-blue) #111;
 }
 .chat-item {
-  padding: 10px 12px;
+  padding: 10px 14px;
   border-bottom: 1px solid #222;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.2s;
+  color: var(--c-fg);
+  text-shadow: 0 0 5px var(--c-fg);
 }
 .chat-item:hover {
   background: #111;
+  transform: translateX(2px);
 }
 #noChatsMsg {
   padding: 16px;
   font-size: 14px;
   text-align: center;
   color: var(--c-accent-red);
+  text-shadow: 0 0 4px var(--c-accent-red);
 }
 
-/* ---------- SCROLLBAR (Geek Style) ---------- */
+/* ---------- SCROLLBAR (Retro Glow) ---------- */
 #chatList::-webkit-scrollbar {
   width: 6px;
 }
@@ -266,14 +385,12 @@ html, body {
 }
 #chatList::-webkit-scrollbar-thumb {
   background: var(--c-accent-blue);
+  box-shadow: 0 0 4px var(--c-accent-blue);
+  border-radius: 3px;
 }
 
-/* ---------------------------------------------------------
- * END PART 2 — Request PART 3 for Thread View styling
- * ------------------------------------------------------- */
-
 /* =========================================================
- * StringAlgebra v0.1 — Terminal Style UI
+ * StringAlgebra v0.2 — Terminal Style UI (Enhanced)
  * ---------------------------------------------------------
  * PART 3 of 3
  * ---------------------------------------------------------
@@ -294,6 +411,7 @@ html, body {
 }
 #threadView.active {
   display: flex;
+  animation: fadeIn 0.3s ease;
 }
 .thread-header {
   display: flex;
@@ -305,6 +423,7 @@ html, body {
   color: var(--c-accent-green);
   font-weight: bold;
   font-size: 15px;
+  text-shadow: 0 0 5px var(--c-accent-green);
 }
 #threadBackBtn {
   background: none;
@@ -312,6 +431,11 @@ html, body {
   color: var(--c-accent-red);
   font-size: 16px;
   cursor: pointer;
+  transition: transform 0.2s;
+}
+#threadBackBtn:hover {
+  transform: scale(1.1);
+  text-shadow: 0 0 5px var(--c-accent-red);
 }
 
 /* ---------- MESSAGES AREA ---------- */
@@ -321,12 +445,15 @@ html, body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-accent-blue) #111;
 }
 
 .msg-row {
   display: flex;
   max-width: 80%;
+  animation: bubbleIn 0.25s ease-out;
 }
 
 .msg-row.own {
@@ -341,22 +468,22 @@ html, body {
 
 .msg-bubble {
   background: #111;
-  padding: 6px 8px;
-  border-radius: 4px;
-  position: relative;
-  border: 1px solid #222;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #333;
   font-size: 14px;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  animation: bubbleIn 0.2s ease-out;
-  color: #fff; /* White text for all bubbles */
+  color: #fff;
+  box-shadow: 0 0 5px #0f0;
 }
 
 .msg-row.own .msg-bubble {
-  background: #111;       /* Same color as other bubbles */
-  border: 1px solid #222; /* Same border */
-  color: #fff;            /* White text */
+  background: #0a0;
+  border: 1px solid #0f0;
+  color: #000;
+  box-shadow: 0 0 7px #0f0;
 }
 
 .msg-text {
@@ -368,20 +495,8 @@ html, body {
   color: #888;
   align-self: flex-end;
 }
-
 .msg-row.own .msg-time {
-  color: red;             /* Timestamp in red for own messages */
-}
-
-@keyframes bubbleIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  color: #000;
 }
 
 /* ---------- TYPING INDICATOR ---------- */
@@ -389,6 +504,7 @@ html, body {
   font-size: 12px;
   color: var(--c-accent-blue);
   margin: 4px 0 0 4px;
+  text-shadow: 0 0 4px var(--c-accent-blue);
 }
 #typingIndicator.hidden {
   display: none;
@@ -401,6 +517,7 @@ html, body {
   background: #111;
   border-top: 1px solid #222;
   padding: 6px;
+  gap: 6px;
 }
 #threadInput {
   flex: 1;
@@ -413,26 +530,36 @@ html, body {
   height: 32px;
   max-height: 120px;
   overflow-y: auto;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+#threadInput:focus {
+  border-color: var(--c-accent-green);
+  box-shadow: 0 0 6px var(--c-accent-green);
+  outline: none;
 }
 #threadSendBtn {
   background: var(--c-accent-green);
   border: none;
   color: #000;
-  margin-left: 6px;
   padding: 6px 12px;
   cursor: pointer;
   font-weight: bold;
   border-radius: 3px;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.2s;
 }
 #threadSendBtn:hover {
   background: #0f5;
+  transform: scale(1.05);
 }
 
 /* ---------- ANIMATIONS ---------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
 @keyframes bubbleIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from { transform: translateY(6px) scale(0.96); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 /* ---------- SCROLLBAR ---------- */
@@ -441,66 +568,6 @@ html, body {
 }
 #threadMessages::-webkit-scrollbar-thumb {
   background: var(--c-accent-blue);
-}
-
-/* =========================================================
- * END PART 3 — CSS complete!
- * ======================================================= */
-
-/* =========================================================
- * Boot Screen & Geek Menu
- * ======================================================= */
-
-/* Boot Screen */
-#bootScreen {
-  position: fixed;
-  inset: 0;
-  background: #000;
-  color: #0f0;
-  font-family: monospace;
-  font-size: 16px;
-  padding: 20px;
-  white-space: pre-line;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  z-index: 9999;
-}
-#bootCursor {
-  display: inline-block;
-  width: 10px;
-  background: #0f0;
-  margin-left: 2px;
-  animation: blink 0.8s infinite;
-}
-@keyframes blink {
-  0%, 50% { background: #0f0; }
-  51%, 100% { background: transparent; }
-}
-
-/* Geek Menu */
-#geekMenu {
-  display: none;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background: #000;
-  font-family: monospace;
-  z-index: 150;
-}
-.geek-btn {
-  background: transparent;
-  border: 2px solid #0f0;
-  color: #0f0;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-.geek-btn:hover {
-  background: #0f0;
-  color: #000;
+  box-shadow: 0 0 4px var(--c-accent-blue);
+  border-radius: 3px;
 }
