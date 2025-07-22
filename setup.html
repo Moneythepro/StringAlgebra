@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>StringAlgebra - Setup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1 class="app-title">StringAlgebra <span class="accent-green">Terminal</span> Chat</h1>
+
+  <div id="authModeWrap" class="auth-mode-wrap">
+    <button id="authModeLogin" class="auth-mode-btn is-active" type="button">Login</button>
+    <button id="authModeRegister" class="auth-mode-btn" type="button">Register</button>
+  </div>
+
+  <form id="loginForm" class="auth-form" autocomplete="on">
+    <label>Email<br /><input id="loginEmail" type="email" required /></label>
+    <label>Password<br /><input id="loginPassword" type="password" required /></label>
+    <button type="submit">Login</button>
+  </form>
+
+  <form id="registerForm" class="auth-form hidden" autocomplete="on">
+    <label>Email<br /><input id="regEmail" type="email" required /></label>
+    <label>Password<br /><input id="regPassword" type="password" required /></label>
+    <label>Username<br /><input id="regUsername" type="text" required minlength="3" maxlength="32"></label>
+    <button type="submit">Create Account</button>
+  </form>
+
+  <div id="authStatus"></div>
+
+  <nav class="page-nav">
+    <a href="connect.html">Go to Connect</a> | <a href="chat.html">Go to Chats</a>
+  </nav>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
