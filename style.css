@@ -1,0 +1,425 @@
+/* =========================================================
+ * StringAlgebra v0.1 — Terminal Style UI
+ * ---------------------------------------------------------
+ * PART 1 of 3
+ * ---------------------------------------------------------
+ * Core Layout, Colors, Tabs, and Auth Forms
+ * ======================================================= */
+
+/* ---------- ROOT COLORS ---------- */
+:root {
+  --c-bg: #000;
+  --c-fg: #0f0; /* Terminal green */
+  --c-accent-red: #ff3d3d;
+  --c-accent-blue: #3da9ff;
+  --c-accent-green: #00ff9c;
+  --c-accent-orange: #ffb84d;
+
+  --font-mono: "Fira Code", "Courier New", monospace;
+}
+
+/* ---------- GLOBAL RESET ---------- */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  background: var(--c-bg);
+  color: var(--c-fg);
+  font-family: var(--font-mono);
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
+}
+
+.hidden { display: none !important; }
+.mono { font-family: var(--font-mono); }
+.selectable { user-select: text; }
+
+/* ---------- TOASTS ---------- */
+#toastContainer {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 9999;
+}
+.toast {
+  background: #111;
+  border: 1px solid #333;
+  padding: 6px 12px;
+  font-size: 14px;
+  color: var(--c-fg);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.2s, transform 0.2s;
+  border-radius: 3px;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.toast-success { color: var(--c-accent-green); }
+.toast-error   { color: var(--c-accent-red); }
+.toast-warn    { color: var(--c-accent-orange); }
+.toast-info    { color: var(--c-accent-blue); }
+
+/* ---------- TAB PANELS ---------- */
+.tab-panel {
+  display: none;
+  padding: 60px 16px 70px;
+}
+.tab-panel.active {
+  display: block;
+}
+
+/* ---------- TAB BAR ---------- */
+#tabBar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: #111;
+  border-top: 1px solid #222;
+  z-index: 50;
+}
+#tabBar button {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--c-fg);
+  padding: 8px 4px;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+#tabBar button[aria-selected="true"] {
+  color: var(--c-accent-green);
+  text-decoration: underline;
+}
+
+/* ---------- AUTH FORMS ---------- */
+.auth-mode-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.auth-mode-btn {
+  flex: 1;
+  background: #111;
+  border: 1px solid #222;
+  color: var(--c-fg);
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.auth-mode-btn.is-active {
+  background: var(--c-accent-green);
+  color: #000;
+  font-weight: bold;
+}
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  color: var(--c-fg);
+}
+.auth-form input {
+  background: #000;
+  border: 1px solid #333;
+  padding: 4px 6px;
+  color: var(--c-fg);
+  font-family: var(--font-mono);
+}
+.auth-form-actions {
+  text-align: right;
+}
+.auth-form-actions button {
+  background: var(--c-accent-green);
+  color: #000;
+  border: none;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.auth-status {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--c-accent-orange);
+}
+
+/* ---------------------------------------------------------
+ * END PART 1 — Request PART 2 for Connect & Chat styling
+ * ------------------------------------------------------- */
+
+/* =========================================================
+ * StringAlgebra v0.1 — Terminal Style UI
+ * ---------------------------------------------------------
+ * PART 2 of 3
+ * ---------------------------------------------------------
+ * Connect Tab & Chat List Styling
+ * ======================================================= */
+
+/* ---------- CONNECT TAB ---------- */
+#connectTab {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+}
+#myConnectKey {
+  font-size: 14px;
+  color: var(--c-accent-blue);
+  text-align: center;
+  word-break: break-all;
+  padding: 6px;
+  border: 1px dashed var(--c-accent-blue);
+  border-radius: 4px;
+}
+.connect-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.connect-actions button {
+  flex: 1;
+  background: #111;
+  border: 1px solid #222;
+  padding: 6px 0;
+  color: var(--c-accent-green);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.connect-actions button:hover {
+  background: #1a1a1a;
+}
+.partner-key-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.partner-key-wrap input {
+  background: #000;
+  border: 1px solid #333;
+  padding: 4px;
+  color: var(--c-fg);
+  font-family: var(--font-mono);
+}
+.partner-key-wrap button {
+  background: var(--c-accent-blue);
+  color: #000;
+  border: none;
+  padding: 6px 0;
+  cursor: pointer;
+}
+#connectStatus {
+  font-size: 13px;
+  text-align: center;
+  color: var(--c-accent-orange);
+}
+
+/* ---------- CHAT TAB ---------- */
+#chatTab {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+#chatList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+.chat-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid #222;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.chat-item:hover {
+  background: #111;
+}
+#noChatsMsg {
+  padding: 16px;
+  font-size: 14px;
+  text-align: center;
+  color: var(--c-accent-red);
+}
+
+/* ---------- SCROLLBAR (Geek Style) ---------- */
+#chatList::-webkit-scrollbar {
+  width: 6px;
+}
+#chatList::-webkit-scrollbar-track {
+  background: #111;
+}
+#chatList::-webkit-scrollbar-thumb {
+  background: var(--c-accent-blue);
+}
+
+/* ---------------------------------------------------------
+ * END PART 2 — Request PART 3 for Thread View styling
+ * ------------------------------------------------------- */
+
+/* =========================================================
+ * StringAlgebra v0.1 — Terminal Style UI
+ * ---------------------------------------------------------
+ * PART 3 of 3
+ * ---------------------------------------------------------
+ * Thread View (Chat Screen) Styling
+ * ======================================================= */
+
+/* ---------- THREAD VIEW ---------- */
+#threadView {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #000;
+  display: none;
+  flex-direction: column;
+  z-index: 100;
+}
+#threadView.active {
+  display: flex;
+}
+.thread-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #111;
+  border-bottom: 1px solid #222;
+  padding: 8px 12px;
+  color: var(--c-accent-green);
+  font-weight: bold;
+  font-size: 15px;
+}
+#threadBackBtn {
+  background: none;
+  border: none;
+  color: var(--c-accent-red);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* ---------- MESSAGES AREA ---------- */
+#threadMessages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.msg-row {
+  display: flex;
+  max-width: 80%;
+}
+.msg-row.own {
+  align-self: flex-end;
+  justify-content: flex-end;
+}
+.msg-row.other {
+  align-self: flex-start;
+  justify-content: flex-start;
+}
+.msg-bubble {
+  background: #111;
+  padding: 6px 8px;
+  border-radius: 4px;
+  position: relative;
+  border: 1px solid #222;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: bubbleIn 0.2s ease-out;
+}
+.msg-row.own .msg-bubble {
+  background: #0b0;
+  color: #000;
+  border: 1px solid #080;
+}
+.msg-text {
+  word-wrap: break-word;
+}
+.msg-time {
+  font-size: 10px;
+  color: #888;
+  align-self: flex-end;
+}
+
+/* ---------- TYPING INDICATOR ---------- */
+#typingIndicator {
+  font-size: 12px;
+  color: var(--c-accent-blue);
+  margin: 4px 0 0 4px;
+}
+#typingIndicator.hidden {
+  display: none;
+}
+
+/* ---------- INPUT BAR ---------- */
+#threadInputBar {
+  display: flex;
+  align-items: center;
+  background: #111;
+  border-top: 1px solid #222;
+  padding: 6px;
+}
+#threadInput {
+  flex: 1;
+  background: #000;
+  border: 1px solid #333;
+  padding: 6px;
+  color: var(--c-fg);
+  font-family: var(--font-mono);
+  resize: none;
+  height: 32px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+#threadSendBtn {
+  background: var(--c-accent-green);
+  border: none;
+  color: #000;
+  margin-left: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+#threadSendBtn:hover {
+  background: #0f5;
+}
+
+/* ---------- ANIMATIONS ---------- */
+@keyframes bubbleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ---------- SCROLLBAR ---------- */
+#threadMessages::-webkit-scrollbar {
+  width: 6px;
+}
+#threadMessages::-webkit-scrollbar-thumb {
+  background: var(--c-accent-blue);
+}
+
+/* =========================================================
+ * END PART 3 — CSS complete!
+ * ======================================================= */
