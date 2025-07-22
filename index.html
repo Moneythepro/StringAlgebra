@@ -128,15 +128,30 @@
     <button id="tabBtn-chat"    role="tab" aria-controls="chatTab"    aria-selected="false" data-tab="chat">Chats</button>
   </nav>
 
-  <!-- Firebase SDKs -->
-  <!-- Add this in your index.html HEAD -->
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    // TODO: Add your Firebase config here
-  
+
+<script>
+  // Your Firebase config
+  var firebaseConfig = {
+    apiKey: "AIzaSyDzI58aOke-0K1j7v-oiIY3ArxQWD_eftg",
+    authDomain: "algebrastring-8e4d9.firebaseapp.com",
+    projectId: "algebrastring-8e4d9",
+    storageBucket: "algebrastring-8e4d9.firebasestorage.app",
+    messagingSenderId: "509455083782",
+    appId: "1:509455083782:web:c327d9afb1319441911687",
+    measurementId: "G-ZY64V2VH4D"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  firebase.analytics();
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 </script>
+  
   <script src="app.js"></script>
 </body>
 </html>
