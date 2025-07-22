@@ -105,12 +105,77 @@
       background:#222;
       color:var(--c-fg);
     }
+
+    /* Boot Screen */
+    #bootScreen {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      color: #0f0;
+      font-family: monospace;
+      font-size: 16px;
+      padding: 20px;
+      white-space: pre-line;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      z-index: 9999;
+    }
+    #bootCursor {
+      display: inline-block;
+      width: 10px;
+      background: #0f0;
+      margin-left: 2px;
+      animation: blink 0.8s infinite;
+    }
+    @keyframes blink {
+      0%, 50% { background: #0f0; }
+      51%, 100% { background: transparent; }
+    }
+
+    /* Geek Menu */
+    #geekMenu {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #000;
+      font-family: monospace;
+    }
+    .geek-btn {
+      background: transparent;
+      border: 2px solid #0f0;
+      color: #0f0;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+    .geek-btn:hover {
+      background: #0f0;
+      color: #000;
+    }
   </style>
 
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <noscript><div style="padding:1rem;color:#ff3d3d">JavaScript required.</div></noscript>
+
+  <!-- Boot Screen -->
+  <div id="bootScreen">
+    <div id="bootText"></div><div id="bootCursor"></div>
+  </div>
+
+  <!-- Geek Menu -->
+  <div id="geekMenu">
+    <button class="geek-btn" data-tab="setup">> Setup</button>
+    <button class="geek-btn" data-tab="connect">> Connect</button>
+    <button class="geek-btn" data-tab="chat">> Chats</button>
+  </div>
 
   <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
@@ -200,7 +265,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
   <script>
-    // Your Firebase config
     var firebaseConfig = {
       apiKey: "AIzaSyDzI58aOke-0K1j7v-oiIY3ArxQWD_eftg",
       authDomain: "algebrastring-8e4d9.firebaseapp.com",
@@ -210,7 +274,6 @@
       appId: "1:509455083782:web:c327d9afb1319441911687",
       measurementId: "G-ZY64V2VH4D"
     };
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     firebase.analytics();
     window.auth = firebase.auth();
