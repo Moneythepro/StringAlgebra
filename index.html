@@ -24,22 +24,87 @@
       --c-accent-green: #00ff9c;
       --c-accent-orange: #ffb84d;
     }
-    html,body{margin:0;padding:0;height:100%;width:100%;background:var(--c-bg);color:var(--c-fg);font-family:monospace;line-height:1.4;-webkit-text-size-adjust:100%;}
+    html,body{
+      margin:0;
+      padding:0;
+      height:100%;
+      width:100%;
+      background:var(--c-bg);
+      color:var(--c-fg);
+      font-family:monospace;
+      line-height:1.4;
+      -webkit-text-size-adjust:100%;
+    }
     .hidden{display:none!important}
     .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
     button{font-family:inherit;cursor:pointer}
     input,textarea{font-family:inherit;}
-    #tabBar{display:flex;justify-content:space-around;align-items:center;position:fixed;bottom:0;left:0;right:0;height:48px;background:#111;border-top:1px solid #222;z-index:50;}
-    #tabBar button{flex:1;background:none;border:none;color:var(--c-fg);padding:8px 4px;font-size:14px;}
+    #tabBar{
+      display:flex;
+      justify-content:space-around;
+      align-items:center;
+      position:fixed;
+      bottom:0;left:0;right:0;
+      height:48px;
+      background:#111;
+      border-top:1px solid #222;
+      z-index:50;
+    }
+    #tabBar button{
+      flex:1;
+      background:none;
+      border:none;
+      color:var(--c-fg);
+      padding:8px 4px;
+      font-size:14px;
+    }
     .tab-panel{display:none;padding:56px 16px 64px;}
     .tab-panel.active{display:block}
-    #threadView{position:fixed;inset:0;background:var(--c-bg);display:none;flex-direction:column;z-index:100;}
+    #threadView{
+      position:fixed;inset:0;
+      background:var(--c-bg);
+      display:none;
+      flex-direction:column;
+      z-index:100;
+    }
     #threadView.active{display:flex}
-    #threadHeader{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#111;border-bottom:1px solid #222;}
-    #threadMessages{flex:1;overflow-y:auto;padding:12px;}
-    #threadInputBar{display:flex;align-items:flex-end;gap:8px;padding:8px;background:#111;border-top:1px solid #222;}
-    #threadInput{flex:1;resize:none;min-height:32px;max-height:120px;background:#000;color:var(--c-fg);border:1px solid #333;padding:4px 6px;}
-    #threadSendBtn{padding:4px 12px;border:1px solid #333;background:#222;color:var(--c-fg);}
+    #threadHeader{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      background:#111;
+      border-bottom:1px solid #222;
+    }
+    #threadMessages{
+      flex:1;
+      overflow-y:auto;
+      padding:12px;
+    }
+    #threadInputBar{
+      display:flex;
+      align-items:flex-end;
+      gap:8px;
+      padding:8px;
+      background:#111;
+      border-top:1px solid #222;
+    }
+    #threadInput{
+      flex:1;
+      resize:none;
+      min-height:32px;
+      max-height:120px;
+      background:#000;
+      color:var(--c-fg);
+      border:1px solid #333;
+      padding:4px 6px;
+    }
+    #threadSendBtn{
+      padding:4px 12px;
+      border:1px solid #333;
+      background:#222;
+      color:var(--c-fg);
+    }
   </style>
 
   <link rel="stylesheet" href="style.css" />
@@ -128,30 +193,30 @@
     <button id="tabBtn-chat"    role="tab" aria-controls="chatTab"    aria-selected="false" data-tab="chat">Chats</button>
   </nav>
 
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-<script>
-  // Your Firebase config
-  var firebaseConfig = {
-    apiKey: "AIzaSyDzI58aOke-0K1j7v-oiIY3ArxQWD_eftg",
-    authDomain: "algebrastring-8e4d9.firebaseapp.com",
-    projectId: "algebrastring-8e4d9",
-    storageBucket: "algebrastring-8e4d9.firebasestorage.app",
-    messagingSenderId: "509455083782",
-    appId: "1:509455083782:web:c327d9afb1319441911687",
-    measurementId: "G-ZY64V2VH4D"
-  };
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  firebase.analytics();
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-</script>
-  
+  <script>
+    // Your Firebase config
+    var firebaseConfig = {
+      apiKey: "AIzaSyDzI58aOke-0K1j7v-oiIY3ArxQWD_eftg",
+      authDomain: "algebrastring-8e4d9.firebaseapp.com",
+      projectId: "algebrastring-8e4d9",
+      storageBucket: "algebrastring-8e4d9.firebasestorage.app",
+      messagingSenderId: "509455083782",
+      appId: "1:509455083782:web:c327d9afb1319441911687",
+      measurementId: "G-ZY64V2VH4D"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+    window.auth = firebase.auth();
+    window.db = firebase.firestore();
+  </script>
+
   <script src="app.js"></script>
 </body>
 </html>
