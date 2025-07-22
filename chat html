@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>StringAlgebra - Chats</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h2>Your Chats</h2>
+  <ul id="chatList"></ul>
+  <div id="noChatsMsg">No contacts yet. Use Connect first.</div>
+
+  <div id="threadView" class="hidden">
+    <header>
+      <button id="threadBackBtn">⟵</button>
+      <div id="threadUserName">User</div>
+    </header>
+    <main id="threadMessages"></main>
+    <form id="threadInputBar">
+      <textarea id="threadInput" rows="1" placeholder="Type a message"></textarea>
+      <button id="threadSendBtn" type="submit">▶</button>
+    </form>
+  </div>
+
+  <nav class="page-nav">
+    <a href="setup.html">Setup</a> | <a href="connect.html">Connect</a>
+  </nav>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
